@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/mfojtik/snowflakes/pkg/generator"
 	"github.com/mfojtik/snowflakes/pkg/sync"
 	"github.com/spf13/cobra"
 )
@@ -47,6 +48,17 @@ var syncCmd = &cobra.Command{
 			}
 			return
 		}
+		if syncFormat == "html" {
+			out := generator.GenerateHTML(controller.SortedResult())
+			if len(syncFilename) > 0 {
+				if err := ioutil.WriteFile(syncFilename, []byte(out), 0644); err != nil {
+					log.Fatalf("error while writing HTML file: %v", err)
+				}
+			} else {
+				fmt.Fprintln(os.Stdout, out)
+			}
+			return
+		}
 		for _, r := range controller.SortedResult() {
 			fmt.Printf("[%d|%d]: %s\n", r.Number, r.ReferenceCount, r.Title)
 		}
@@ -54,7 +66,7 @@ var syncCmd = &cobra.Command{
 }
 
 func init() {
-	syncCmd.Flags().StringVarP(&syncFormat, "output", "o", "", "Output format ('json' or '')")
+	syncCmd.Flags().StringVarP(&syncFormat, "output", "o", "", "Output format ('json', 'html' or '')")
 	syncCmd.Flags().StringVarP(&syncFilename, "file", "f", "", "Filename to write JSON to")
 	RootCmd.AddCommand(syncCmd)
 }

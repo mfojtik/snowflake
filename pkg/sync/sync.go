@@ -53,7 +53,7 @@ var defaultListOptions = github.ListOptions{
 
 func (c *Controller) SortedResult() []*Result {
 	result := c.result
-	sort.Sort(ByReferenceCount(result))
+	sort.Sort(sort.Reverse((ByReferenceCount(result))))
 	return result
 }
 
@@ -126,8 +126,9 @@ func (c *Controller) worker(id int, jobs <-chan Job, results chan<- Result) {
 	for j := range jobs {
 		now := c.limiter.Take()
 		result := Result{
-			Title:  *j.issue.Title,
-			Number: *j.issue.Number,
+			Title:     *j.issue.Title,
+			Number:    *j.issue.Number,
+			CreatedAt: *j.issue.CreatedAt,
 		}
 		log.Printf("#%d (job %d/%d): fetching timeline for #%d", id, j.name, len(c.issues), *j.issue.Number)
 		timeline, _, err := c.client.Issues.ListIssueTimeline("openshift", "origin", result.Number, &defaultListOptions)
